@@ -505,6 +505,14 @@ class GatedKalmaNet(nn.Module):
 
         gk = g if self.use_forgetting_gate_kk else None
 
+        # Backward kernels require sequence length to be divisible by chunk size
+        if gk is None and self.training:
+            seq_len = hidden_states.shape[1]
+            assert (
+                    seq_len % self.chunk_size == 0
+            ), f"Triton chunk size must divide the sequence length. Got seq_len={seq_len}, chunk_size={self.chunk_size}"
+
+
         # Apply GKA Chebyshev solver
         if last_state is None:
             if self.sequence_parallel_group is not None:

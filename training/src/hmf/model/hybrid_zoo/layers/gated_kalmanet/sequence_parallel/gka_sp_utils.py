@@ -243,6 +243,7 @@ class State_Passing_GKA_P2P(torch.autograd.Function):
         grad_kk_chunks = []
         grad_h_kv_chunks = []
         grad_g_cumsum_last_chunks = []
+        grad_gkk_final_chunks = []
 
         # Reverse of forward pass: start with first half chunks (0 → 1 → 2 → 3)
         for rank in range(cp_size):
@@ -279,6 +280,7 @@ class State_Passing_GKA_P2P(torch.autograd.Function):
                 grad_kk_chunks.append(grad_curr_kk)
                 grad_h_kv_chunks.append(grad_curr_h_kv)
                 grad_g_cumsum_last_chunks.append(grad_g_cumsum_last_val)
+                grad_gkk_final_chunks.append(grad_curr_gkk)
 
             dist.barrier(group=cp_group)
 
@@ -313,6 +315,7 @@ class State_Passing_GKA_P2P(torch.autograd.Function):
             grad_kk_chunks.append(grad_curr_kk)
             grad_h_kv_chunks.append(grad_curr_h_kv)
             grad_g_cumsum_last_chunks.append(grad_g_cumsum_last_val)
+            grad_gkk_final_chunks.append(grad_curr_gkk)
 
         dist.barrier(group=cp_group)
 
@@ -342,6 +345,7 @@ class State_Passing_GKA_P2P(torch.autograd.Function):
                     grad_kk_chunks.append(grad_curr_kk)
                     grad_h_kv_chunks.append(grad_curr_h_kv)
                     grad_g_cumsum_last_chunks.append(grad_g_cumsum_last_val)
+                    grad_gkk_final_chunks.append(grad_curr_gkk)
 
             dist.barrier(group=cp_group)
 
@@ -355,9 +359,17 @@ class State_Passing_GKA_P2P(torch.autograd.Function):
         grad_kk_final = torch.cat(grad_kk_chunks[::-1], dim=0)
         grad_h_kv_final = torch.cat(grad_h_kv_chunks[::-1], dim=0)
         grad_g_cumsum_last = torch.cat(grad_g_cumsum_last_chunks[::-1], dim=0) if g_cumsum_last is not None else None
+        grad_gkk_final = torch.cat(grad_gkk_final_chunks[::-1], dim=0)
 
-        # Return gradients: None for gkk_final (only used internally for decay, not an output)
-        return grad_kk_final, None, grad_h_kv_final, grad_g_cumsum_last, None, None, None, None
+        # The upstream gradient for kk (grad_prev_kk) arrives pre-negated from the
+        # Chebyshev implicit differentiation (chunk_bwd_dh omits the minus sign from
+        # d/dH[(H+λI)^{-1}] = -(H+λI)^{-1} · dH · (H+λI)^{-1}).
+        # The kk_final gradient (returned as position 0) is consumed by
+        # ChunkFwdHAutograd.backward which expects this pre-negated convention
+        # (its kernel applies dk = -dk to compensate).
+        # However, gkk_final feeds into torch.sum(gk) which has no such convention,
+        # so we must negate to get the true gradient.
+        return grad_kk_final, -grad_gkk_final, grad_h_kv_final, grad_g_cumsum_last, None, None, None, None
 
 
 def state_passing_gka_p2p(kk_final, gkk_final, h_kv_final, g_cumsum_last,

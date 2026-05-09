@@ -193,8 +193,11 @@ class ChunkFwdHAutograd(torch.autograd.Function):
             chunk_size = chunk_size,
         )
 
-        # Exclusive forward cumsum, for details see Eq. 32 and 33 from the GKA paper)
-        grad_gk = grad_gkk - chunk_global_cumsum(grad_gkk)
+        if grad_gkk is not None:
+            # Exclusive forward cumsum, for details see Eq. 32 and 33 from the GKA paper)
+            grad_gk = grad_gkk - chunk_global_cumsum(grad_gkk)
+        else:
+            grad_gk = None
 
         return grad_k_proj, grad_gk, None
 
