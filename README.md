@@ -403,6 +403,7 @@ Sustained decode throughput (tokens/s) and mean TTFT on 8× H200 GPUs (TP=8), me
 
 ## Our Research
 
+- [Priming: Hybrid State Space Models From Pre-trained Transformers](https://arxiv.org/abs/2605.08301) (ArXiv 2605.08301)
 - [Gated KalmaNet: A Fading Memory Layer Through Test-Time Ridge Regression](https://arxiv.org/abs/2511.21016) (CVPR 2026)
 - [PICASO: Permutation-Invariant Context Composition with State Space Models](https://arxiv.org/abs/2502.17605) (ICLR 2025)
 - [B'MOJO: Hybrid State Space Realizations of Foundation Models with Eidetic and Fading Memory](https://arxiv.org/abs/2407.06324) (NeurIPS 2024)
@@ -450,6 +451,13 @@ If you use this library in your research, please cite:
   author  = {Nunez* Elvis and Kaul* Prannay and Chattopadhyay* Aditya and Becker* Evan and Bowman* Ben and Zancato* Luca and Thomas David and Xia Wei and Soatto Stefano},
   year = {2026},
   url = {https://github.com/awslabs/hybrid-model-factory}
+}
+
+@article{chattopadhyay2026priming,
+  title={Priming: Hybrid State Space Models From Pre-trained Transformers},
+  author={Chattopadhyay, Aditya and Nunez, Elvis and Kaul, Prannay and Bowman, Benjamin and Becker, Evan and Zancato, Luca and Thomas, David and Xia, Wei and Soatto, Stefano},
+  journal={arXiv preprint arXiv:2605.08301},
+  year={2026}
 }
 ```
 \* Key contributors (equal contribution)
