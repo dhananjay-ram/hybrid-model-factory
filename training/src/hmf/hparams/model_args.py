@@ -219,6 +219,10 @@ class BaseModelArguments:
         default=False,
         metadata={"help": "Whether to trust the execution of code from datasets/models defined on the Hub or not."},
     )
+    use_deepspeed_mics: bool = field(
+        default=False,
+        metadata={"help": "Whether or not to use DeepSpeed MiCS initialization instead of default ZeRO-3."},
+    )
 
 
     def __post_init__(self):
