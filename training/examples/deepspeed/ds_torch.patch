@@ -1,0 +1,13 @@
+diff --git a/deepspeed/comm/torch.py b/deepspeed/comm/torch.py
+index 19f2ba2d..31721de7 100755
+--- a/deepspeed/comm/torch.py
++++ b/deepspeed/comm/torch.py
+@@ -272,7 +272,7 @@ class TorchBackend(Backend):
+                                                                                        group=group,
+                                                                                        async_op=True)
+                     reqs.append(handle)
+-            if async_op:
++            if not async_op:
+                 return reqs[-1]
+             else:
+                 reqs[-1].wait()
