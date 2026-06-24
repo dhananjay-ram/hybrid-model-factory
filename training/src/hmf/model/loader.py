@@ -184,9 +184,9 @@ def load_config(model_args: "ModelArguments") -> "PretrainedConfig":
 # override deepspeed zero init to mics init
 def mics_init_wrapper(*args, **kwargs):
     # This print statement confirms the patch is active and working
-    print("PATCH APPLIED: Forcing deepspeed.zero.MiCS_Init for LLaMA-Factory.")
-    print(f"Captured args: {args}")
-    print(f"Captured kwargs: {kwargs}")
+    logger.info_rank0("PATCH APPLIED: Forcing deepspeed.zero.MiCS_Init for LLaMA-Factory.")
+    logger.info_rank0(f"Captured args: {args}")
+    logger.info_rank0(f"Captured kwargs: {kwargs}")
 
     # Crucially, we pass the captured *args and **kwargs to MiCS_Init
     return deepspeed.zero.MiCS_Init(*args, **kwargs)
