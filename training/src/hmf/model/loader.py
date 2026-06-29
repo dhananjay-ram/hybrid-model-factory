@@ -181,6 +181,15 @@ def load_config(model_args: "ModelArguments") -> "PretrainedConfig":
     _apply_config_overrides(config, model_args)
     return config
 
+# override deepspeed zero init to mics init
+def mics_init_wrapper(*args, **kwargs):
+    # This print statement confirms the patch is active and working
+    logger.info_rank0("PATCH APPLIED: Forcing deepspeed.zero.MiCS_Init for LLaMA-Factory.")
+    logger.info_rank0(f"Captured args: {args}")
+    logger.info_rank0(f"Captured kwargs: {kwargs}")
+
+    # Crucially, we pass the captured *args and **kwargs to MiCS_Init
+    return deepspeed.zero.MiCS_Init(*args, **kwargs)
 
 def load_model(
     tokenizer: "PreTrainedTokenizer",
@@ -193,6 +202,10 @@ def load_model(
     # Monkey patch to enable sequence parallelism (SP)
     if is_flash_attn_2_available():
         sequence_parallel_group = apply_sequence_parallel(model_args)
+
+    # Force DeepSpeed to use MiCS_Init whenever 'deepspeed.zero.Init' is called
+    if model_args.use_deepspeed_mics:
+        deepspeed.zero.Init = mics_init_wrapper
 
     # Need to register hybrid models after the SP monkey patch is applied
     from .hybrid_zoo.models.model_register import register_hybrid_models

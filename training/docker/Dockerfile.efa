@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir \
 
 # Install accelerator packages
 RUN pip install --no-cache-dir \
-    deepspeed==0.17.6 \
+    deepspeed==0.18.9 \
     triton==3.6.0
 
 # Install metrics and evaluation packages
@@ -41,6 +41,12 @@ RUN pip install --no-cache-dir \
     pytrec_eval \
     rouge_score \
     tensorboard
+
+# Apply DeepSpeed MiCS patches
+COPY patches/ds_mics.patch /tmp/ds_mics.patch
+COPY patches/ds_torch.patch /tmp/ds_torch.patch
+RUN patch -N /usr/local/lib/python3.12/dist-packages/deepspeed/runtime/zero/mics.py /tmp/ds_mics.patch
+RUN patch -N /usr/local/lib/python3.12/dist-packages/deepspeed/comm/torch.py /tmp/ds_torch.patch
 
 # Apply Qwen3.5 position IDs patch
 COPY patches/qwen3_5_position_ids_fix.patch /tmp/
