@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir \
 
 # Install accelerator packages
 RUN pip install --no-cache-dir \
-    deepspeed==0.17.6 \
+    deepspeed==0.18.9 \
     triton==3.6.0
 
 # Install metrics and evaluation packages
