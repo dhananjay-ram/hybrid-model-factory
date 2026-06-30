@@ -48,6 +48,13 @@ COPY patches/ds_torch.patch /tmp/ds_torch.patch
 RUN patch -N /usr/local/lib/python3.12/dist-packages/deepspeed/runtime/zero/mics.py /tmp/ds_mics.patch
 RUN patch -N /usr/local/lib/python3.12/dist-packages/deepspeed/comm/torch.py /tmp/ds_torch.patch
 
+# Apply patches for deepspeed async checkpointing
+COPY patches/async_torch_checkpoint_engine.py /usr/local/lib/python3.12/dist-packages/deepspeed/runtime/checkpoint_engine/
+COPY patches/ds_config.patch /tmp/ds_config.patch
+COPY patches/ds_utils.patch /tmp/ds_utils.patch
+RUN patch -p1 -N /usr/local/lib/python3.12/dist-packages/deepspeed/runtime/checkpoint_engine/utils.py < /tmp/ds_utils.patch
+RUN patch -p1 -N /usr/local/lib/python3.12/dist-packages/deepspeed/runtime/zero/config.py < /tmp/ds_config.patch
+
 # Apply Qwen3.5 position IDs patch
 COPY patches/qwen3_5_position_ids_fix.patch /tmp/
 RUN patch -p1 -N -d /usr/local/lib/python3.12/dist-packages < /tmp/qwen3_5_position_ids_fix.patch
